@@ -1,5 +1,6 @@
 """the chunk module"""
 
+import random
 from enum import Enum, auto
 from typing import TYPE_CHECKING
 
@@ -34,8 +35,9 @@ class Chunk:
     def generate_self(self, grid: Grid) -> None:
         self.state = ChunkStates.GENERATED
 
-    def __generate_random(self):
-        pass
+    def __generate_random(self, density: float) -> None:
+        mask = np.random.random((CHUNK_SIZE, CHUNK_SIZE)) < density
+        random = np.random.randint(())
 
 
 class NoneChunk(Chunk, metaclass=Singleton):
