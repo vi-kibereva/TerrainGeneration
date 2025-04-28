@@ -11,5 +11,4 @@ def evolve(bigger_chunk):
             counter = sum(bigger_chunk[k][m].type_ for (k, m) in NEIGHBORS)
 
 
-def generate_chunk(bigger_chunk): ...
-
+def generate_chunk(bigger_chunk: np.ndarray) -> np.ndarray: ...
