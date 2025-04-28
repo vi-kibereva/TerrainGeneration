@@ -1,50 +1,26 @@
-from abc import ABC, abstractmethod
-class Cell(ABC):
-    @abstractmethod
-    def evolve(self, neighbors:list):
-        ...
+from enum import Enum
+class CellTypes(Enum):
+    WATER = 0
+    SAND = 1
+    GRASS = 2
+    FOREST = 3
+    PLATEAU = 4
 
-    def chance(self):
-        ...
+CELL_RANGES: dict[int, tuple[int, int]] = {
+    CellTypes.WATER: (0, 7),
+    CellTypes.SAND: (8, 14),
+    CellTypes.GRASS: (15, 23),
+    CellTypes.FOREST: (24, 28),
+    CellTypes.PLATEAU: (29, 36)    
+}
 
-class Water(Cell):
-    '''
-    Class for water cells
-    '''
-    def evolve(self, neighbors:list):
-        ...
+MAX_RANGE = 36
 
-class Sand(Cell):
+class Cell:
     '''
-    Class for send cells
+    Class for cells
     '''
-    def evolve(self, neighbors:list):
-        ...
-
-class Forest(Cell):
-    '''
-    Class for forest cells
-    '''
-    def evolve(self, neighbors:list):
-        ...
-
-class Void(Cell):
-    '''
-    Class for void cells
-    '''
-    def evolve(self, neighbors:list):
-        ...
-
-class Grass(Cell):
-    '''
-    Class for grass cells
-    '''
-    def evolve(self, neighbors:list):
-        ...
-
-class Plateau(Cell):
-    '''
-    Class for grass cells
-    '''
-    def evolve(self, neighbors:list):
-        ...
+    MAX_AGE = 10
+    def __init__(self, type_ = CellTypes.WATER, age = 0):
+        self.type_ = type_
+        self.age = age
