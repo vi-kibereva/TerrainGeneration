@@ -7,7 +7,6 @@ def evolve(bigger_chunk):
     for i in range(1, CHUNK_SIZE-1):
         for j in range(1, CHUNK_SIZE-1):
             counter = sum(bigger_chunk[k][m].type_ for (k, m) in NEIGHBORS)
-            if 0 < counter < 
                 
 
-def generate_chunk(bigger_chunk):
+def generate_chunk(bigger_chunk): ...
