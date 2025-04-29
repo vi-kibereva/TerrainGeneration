@@ -1,2 +1,5 @@
 build/
 src/terrain_generation.egg-info/
+venv/
+**/__pycache__/
+src/terrain_generation.egg-info/
