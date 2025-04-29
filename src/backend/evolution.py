@@ -1,14 +1,24 @@
-from numpy.typing import ArrayLike
 import numpy as np
-
+from scipy.signal import convolve2d
+from .cells import CELL_RANGES
+NUMBER_OF_ITERATIONS = 20
 
 def evolve(bigger_chunk):
-    CHUNK_SIZE = 16
-    result = np.array((CHUNK_SIZE, CHUNK_SIZE), dtype=np.int8)
-    NEIGHBORS = [(-1, -1), (-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1)]
-    for i in range(1, CHUNK_SIZE - 1):
-        for j in range(1, CHUNK_SIZE - 1):
-            counter = sum(bigger_chunk[k][m].type_ for (k, m) in NEIGHBORS)
+    '''
+    Takes bigger_chunk and changes it to the next gen
+    '''
+    kernel = np.ones((3, 3), dtype=int)
+    convolved = convolve2d(bigger_chunk, kernel, mode='valid')
+    smaller_chunk = bigger_chunk[1:-1, 1:-1]
+    for cell_type, (low, high) in CELL_RANGES.items():
+        mask = (convolved >= low) & (convolved <= high)
+        smaller_chunk[mask] = cell_type.value
 
-
-def generate_chunk(bigger_chunk: np.ndarray) -> np.ndarray: ...
+        
+def generate_chunk(bigger_chunk: np.ndarray) -> np.ndarray:
+    '''
+    Runs evolve a number of times
+    '''
+    for _ in range(NUMBER_OF_ITERATIONS):
+        evolve(bigger_chunk)
+    return bigger_chunk[1:-1, 1:-1]
