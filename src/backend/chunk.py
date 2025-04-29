@@ -32,7 +32,7 @@ class Chunk:
         self.state = ChunkStates.NOT_GENERATED
 
     @property
-    def cells(self) -> ArrayLike:
+    def cells(self) -> np.ndarray:
         return self.__cells
 
     def __generate_random(self, density: float) -> None:
@@ -44,32 +44,21 @@ class Chunk:
     def generate_self(self, grid: Grid, pos: tuple[int, int]) -> None:
         x, y = pos
 
-        lu_chunk: Chunk = grid[x - 1, y + 1]
-        lm_chunk: Chunk = grid[x - 1, y]
-        ld_chunk: Chunk = grid[x - 1, y - 1]
-
-        left_stripe: np.ndarray = np.concat(
-            (lu_chunk.cells, lm_chunk.cells, ld_chunk.cells), axis=1
+        concatenated: np.ndarray = np.zeros(
+            (CHUNK_SIZE + 2, CHUNK_SIZE + 2), dtype=np.int8
         )
 
-        mu_chunk: Chunk = grid[x, y + 1]
-        md_chunk: Chunk = grid[x, y - 1]
+        # sides
+        concatenated[0, 1:-1] = grid[x, y + 1].cells[-1, :]
+        concatenated[-1, 1:-1] = grid[x, y - 1].cells[0, :]
+        concatenated[1:-1, 0] = grid[x - 1, y].cells[:, -1]
+        concatenated[1:-1, -1] = grid[x + 1, y].cells[:, 0]
 
-        middle_stripe: np.ndarray = np.concat(
-            (mu_chunk.cells, self.cells, md_chunk.cells), axis=1
-        )
-
-        ru_chunk: Chunk = grid[x + 1, y + 1]
-        rm_chunk: Chunk = grid[x + 1, y + 1]
-        rd_chunk: Chunk = grid[x + 1, y + 1]
-
-        right_stripe: np.ndarray = np.concat(
-            (ru_chunk.cells, rm_chunk.cells, rd_chunk.cells), axis=1
-        )
-
-        concatenated: np.ndarray = np.concat(
-            (left_stripe, middle_stripe, right_stripe), axis=0
-        )
+        # corners
+        concatenated[0, 0] = grid[x - 1, y + 1].cells[-1, -1]  # NW
+        concatenated[0, -1] = grid[x + 1, y + 1].cells[-1, 0]  # NE
+        concatenated[-1, 0] = grid[x - 1, y - 1].cells[0, -1]  # SW
+        concatenated[-1, -1] = grid[x + 1, y - 1].cells[0, 0]  # SE
 
         self.__cells = generate_chunk(concatenated)
         self.state = ChunkStates.GENERATED
