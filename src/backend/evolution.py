@@ -14,11 +14,11 @@ def evolve(bigger_chunk):
         mask = (convolved >= low) & (convolved <= high)
         smaller_chunk[mask] = cell_type.value
 
-def generate_chunk(bigger_chunk):
+        
+def generate_chunk(bigger_chunk: np.ndarray) -> np.ndarray:
     '''
     Runs evolve a number of times
     '''
     for _ in range(NUMBER_OF_ITERATIONS):
         evolve(bigger_chunk)
     return bigger_chunk[1:-1, 1:-1]
-
