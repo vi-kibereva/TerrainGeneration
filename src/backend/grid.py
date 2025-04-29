@@ -23,7 +23,9 @@ class Grid:
             raise ValueError("noise_radius + 1 must be bigger then generated_radius")
 
         self._create_random_chunks(pos, noise_radius)
-        self._get_chunks_in_radius(pos, generated_radius)
+        print("random chunks complete\n")
+        self._generate_chunks(pos, generated_radius)
+        print("generated random chunks\n")
 
     def _create_random_chunks(self, pos: tuple[int, int], radius: int):
         for chunk, pos in self._get_chunks_in_radius(pos, radius):
@@ -43,8 +45,8 @@ class Grid:
 
         for i in range(1, radius):
             for j in range(-radius + i + 1, radius - i):
-                yield self.__chunks[x - i, y + j], (x - i, y + j)
+                yield self[x - i, y + j], (x - i, y + j)
 
         for i in range(radius):
             for j in range(-radius + i + 1, radius - i):
-                yield self.__chunks[x + i, y + j], (x + i, y + j)
+                yield self[x + i, y + j], (x + i, y + j)
