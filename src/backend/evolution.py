@@ -2,7 +2,7 @@ import numpy as np
 from scipy.signal import convolve2d
 from .cells import CELL_LUT
 
-NUMBER_OF_ITERATIONS = 20
+NUMBER_OF_ITERATIONS = 10
 KERNEL = np.ones((3, 3), dtype=int)
 
 

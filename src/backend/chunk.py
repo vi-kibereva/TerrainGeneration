@@ -41,27 +41,30 @@ class Chunk:
         raw = np.random.randint(0, MAX_RANGE + 1, size=mask.sum(), dtype=np.int8)
         self.__cells[mask] = CELL_LUT[raw]
 
-    def generate_self(self, grid: Grid, pos: tuple[int, int]) -> None:
+    def generate_self(self, grid: "Grid", pos: tuple[int, int]) -> None:
         x, y = pos
+        padded = np.zeros((CHUNK_SIZE + 2, CHUNK_SIZE + 2), dtype=np.int8)
 
-        concatenated: np.ndarray = np.zeros(
-            (CHUNK_SIZE + 2, CHUNK_SIZE + 2), dtype=np.int8
-        )
+        # 1) copy your existing random cells into the center
+        padded[1:-1, 1:-1] = self.__cells
 
-        # sides
-        concatenated[0, 1:-1] = grid[x, y + 1].cells[-1, :]
-        concatenated[-1, 1:-1] = grid[x, y - 1].cells[0, :]
-        concatenated[1:-1, 0] = grid[x - 1, y].cells[:, -1]
-        concatenated[1:-1, -1] = grid[x + 1, y].cells[:, 0]
+        # 2) overwrite the edges from neighbours (as you already do)
+        padded[0, 1:-1] = grid[x, y + 1].cells[-1, :]
+        padded[-1, 1:-1] = grid[x, y - 1].cells[0, :]
+        padded[1:-1, 0] = grid[x - 1, y].cells[:, -1]
+        padded[1:-1, -1] = grid[x + 1, y].cells[:, 0]
+        padded[0, 0] = grid[x - 1, y + 1].cells[-1, -1]
+        padded[0, -1] = grid[x + 1, y + 1].cells[-1, 0]
+        padded[-1, 0] = grid[x - 1, y - 1].cells[0, -1]
+        padded[-1, -1] = grid[x + 1, y - 1].cells[0, 0]
 
-        # corners
-        concatenated[0, 0] = grid[x - 1, y + 1].cells[-1, -1]  # NW
-        concatenated[0, -1] = grid[x + 1, y + 1].cells[-1, 0]  # NE
-        concatenated[-1, 0] = grid[x - 1, y - 1].cells[0, -1]  # SW
-        concatenated[-1, -1] = grid[x + 1, y - 1].cells[0, 0]  # SE
+        print(f"generating chunk{self.state}: {padded}")
 
-        self.__cells = generate_chunk(concatenated)
+        # 3) evolve it
+        self.__cells = generate_chunk(padded)
         self.state = ChunkStates.GENERATED
+
+        print(f"Complete chunk{self.state}: {padded}")
 
 
 class NoneChunk(Chunk, metaclass=Singleton):
