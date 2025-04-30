@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.signal import convolve2d
-# from .cells import CELL_LUT
+from .cells import CELL_LUT
 from numba import njit, prange
 
 NUMBER_OF_ITERATIONS = 10
