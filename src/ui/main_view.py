@@ -1,20 +1,27 @@
 from PySide6 import QtWidgets
-from .grid_view import GridView
 from src.backend.grid import Grid
+from src.ui.grid_view import ControlPanel, GridView
 
 
-class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self, grid: Grid):
+class MainWindow(QtWidgets.QWidget):
+    def __init__(self, grid):
         super().__init__()
-        self.view = GridView(grid, origin=(0, 0), cells_w=40, cells_h=30)
-        self.setCentralWidget(self.view)
-        self.resize(800, 600)
+
+        layout = QtWidgets.QHBoxLayout(self)
+
+        self.control_panel = ControlPanel(self)
+        layout.addWidget(self.control_panel)
+
+        self.grid_view = GridView(grid, self)
+        layout.addWidget(self.grid_view)
+
+        self.setLayout(layout)
+
 
 
 def main():
     import sys
 
-    # create and populate your Grid however you like:
     grid = Grid(density=0.5)
 
     app = QtWidgets.QApplication(sys.argv)
