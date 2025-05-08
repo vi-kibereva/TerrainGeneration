@@ -1,13 +1,12 @@
-from typing import TYPE_CHECKING
 from PySide6 import QtCore, QtGui, QtWidgets
+import random
+from typing import TYPE_CHECKING
 from math import floor
 from src.backend.chunk import CHUNK_SIZE, ChunkStates, MAX_RANGE
+from src.ui.panel_view import ControlPanel
 
 if TYPE_CHECKING:
     from src.backend.grid import Grid
-
-# import your CHUNK_SIZE, Grid and NoneChunk here
-# from src.grid import Grid, CHUNK_SIZE, NoneChunk
 
 blue = QtGui.QColor(0, 0, 255)
 green = QtGui.QColor(0, 255, 0)
@@ -15,99 +14,110 @@ brown = QtGui.QColor(139, 69, 19)
 
 
 class GridView(QtWidgets.QWidget):
-    def __init__(
-        self,
-        grid: "Grid",
-        origin: tuple[int, int] = (0, 0),
-        cells_w: int = 50,
-        cells_h: int = 50,
-        parent=None,
-    ):
+    def __init__(self, grid, cells_w=50, cells_h=50, parent=None):
         super().__init__(parent)
         self.grid = grid
-        self.origin = origin  # top-left cell coordinate (in world cells)
-        self.cells_w = cells_w  # how many cells wide to draw
-        self.cells_h = cells_h  # how many cells tall to draw
-        self.setMinimumSize(200, 200)
+        self.cells_w = cells_w
+        self.cells_h = cells_h
+        self.origin = (-(cells_w // 2), -(cells_h // 2))
 
-    def paintEvent(self, event: QtGui.QPaintEvent):
+        # Позиція персонажа
+        self.player_position = [0, 0]  # Список, бо потрібно змінювати значення
+
+        # Завантаження зображення персонажа
+        self.player_pixmap = QtGui.QPixmap("src/ui/chelik.png")
+
+        # Лейаут тільки для полотна
+        layout = QtWidgets.QVBoxLayout(self)
+        self.canvas = QtWidgets.QWidget(self)
+        self.canvas.paintEvent = self.paintEvent
+        layout.addWidget(self.canvas)
+        self.setLayout(layout)
+        self.setMinimumSize(800, 600)
+
+        # Встановлення фокусу на це вікно для обробки клавіатурних подій
+        self.setFocusPolicy(QtCore.Qt.StrongFocus)
+
+    def generate_grid(self, seed, density):
+        random.seed(seed)
+        self.grid.generate(seed, density)
+        self.update()
+
+    def clear_grid(self):
+        self.grid.clear()
+        self.update()
+
+    def paintEvent(self, event):
         painter = QtGui.QPainter(self)
         w, h = self.width(), self.height()
-        cw = w / self.cells_w  # cell-width in pixels
-        ch = h / self.cells_h  # cell-height in pixels
+        cw = w / self.cells_w
+        ch = h / self.cells_h
         ox, oy = self.origin
 
         for row in range(self.cells_h):
             for col in range(self.cells_w):
-                # world cell coordinates
-                cell_x = ox + col
-                cell_y = oy + row
-
-                # map to chunk coordinates + in-chunk indices
-                # floor-divide handles negatives correctly:
-                cx = floor(cell_x / CHUNK_SIZE)
-                cy = floor(cell_y / CHUNK_SIZE)
-                ix = cell_x - cx * CHUNK_SIZE
-                iy = cell_y - cy * CHUNK_SIZE
-
+                x = ox + col
+                y = oy + row
+                cx = floor(x / CHUNK_SIZE)
+                cy = floor(y / CHUNK_SIZE)
+                ix, iy = x - cx * CHUNK_SIZE, y - cy * CHUNK_SIZE
                 chunk = self.grid[(cx, cy)]
                 if chunk.state == ChunkStates.VOID:
-                    color = QtGui.QColor(0, 0, 0)  # background
+                    color = QtGui.QColor(50, 50, 50)
                 else:
                     val = int(chunk.cells[ix, iy])
+                    color = self.calculate_color(val)
+                painter.fillRect(col * cw, row * ch, cw, ch, color)
 
-                    t = val / (MAX_RANGE / 9)
-                    if t < 0.5:
-                        # 0.0 → 0.5  : blue → green
-                        u = t / 0.5
-                        r = int(blue.red() + (green.red() - blue.red()) * u)
-                        g = int(blue.green() + (green.green() - blue.green()) * u)
-                        b = int(blue.blue() + (green.blue() - blue.blue()) * u)
-                    else:
-                        # 0.5 → 1.0  : green → brown
-                        u = (t - 0.5) / 0.5
-                        r = int(green.red() + (brown.red() - green.red()) * u)
-                        g = int(green.green() + (brown.green() - green.green()) * u)
-                        b = int(green.blue() + (brown.blue() - green.blue()) * u)
-
-                    color = QtGui.QColor(r, g, b)
-
-                rect = QtCore.QRectF(col * cw, row * ch, cw, ch)
-                painter.fillRect(rect, color)
-
-        painter.setPen(QtGui.QPen(QtGui.QColor(50, 50, 50), 1))
-        # optional: draw grid lines
+        # Сітка
+        painter.setPen(QtGui.QPen(QtGui.QColor(200, 200, 200), 1))
         for i in range(self.cells_w + 1):
-            x = i * cw
-            painter.drawLine(int(x), 0, int(x), h)
+            painter.drawLine(int(i * cw), 0, int(i * cw), h)
         for j in range(self.cells_h + 1):
-            y = j * ch
-            painter.drawLine(0, int(y), w, int(y))
-        painter.setPen(QtGui.QPen(QtGui.QColor(50, 50, 50), 1))
-        # thin 1-cell grid lines
-        painter.setPen(QtGui.QPen(QtGui.QColor(50, 50, 50), 1))
-        # vertical
-        for i in range(self.cells_w + 1):
-            x = i * cw
-            painter.drawLine(int(x), 0, int(x), h)
-        # horizontal
-        for j in range(self.cells_h + 1):
-            y = j * ch
-            painter.drawLine(0, int(y), w, int(y))
+            painter.drawLine(0, int(j * ch), w, int(j * ch))
 
-        # thick chunk boundaries
-        chunk_pen = QtGui.QPen(QtGui.QColor(200, 200, 200), 2)
-        painter.setPen(chunk_pen)
+        # Малюємо персонажа
+        if self.player_position is not None:
+            # Центр клітинки
+            px = (self.player_position[0] - ox) * cw + cw / 2
+            py = (self.player_position[1] - oy) * ch + ch / 2
 
-        # vertical chunk lines
-        for col in range(self.cells_w + 1):
-            if (ox + col) % CHUNK_SIZE == 0:
-                x = col * cw
-                painter.drawLine(int(x), 0, int(x), h)
+            # Фіксований розмір персонажа (зробимо його більшим за клітинку)
+            size = 60
+            scaled_pixmap = self.player_pixmap.scaled(size, size, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
 
-        # horizontal chunk lines
-        for row in range(self.cells_h + 1):
-            if (oy + row) % CHUNK_SIZE == 0:
-                y = row * ch
-                painter.drawLine(0, int(y), w, int(y))
-        painter.end()
+            # Центрування картинки
+            px -= size / 2
+            py -= size / 2
+
+            painter.drawPixmap(int(px), int(py), scaled_pixmap)
+
+    def calculate_color(self, val):
+        t = val / (MAX_RANGE / 9)
+        if t < 0.5:
+            u = t / 0.5
+            g = int(255 * u)
+            b = int(255 * (1 - u))
+            r = 0
+        else:
+            u = (t - 0.5) / 0.5
+            r = int(139 * u)
+            g = int(255 - 186 * u)
+            b = 0
+        return QtGui.QColor(r, g, b)
+
+    def keyPressEvent(self, event):
+        key = event.key()
+
+        # Рух персонажа
+        if key == QtCore.Qt.Key_Up:  # Стрілка вгору
+            self.player_position[1] -= 1
+        elif key == QtCore.Qt.Key_Down:  # Стрілка вниз
+            self.player_position[1] += 1
+        elif key == QtCore.Qt.Key_Left:  # Стрілка вліво
+            self.player_position[0] -= 1
+        elif key == QtCore.Qt.Key_Right:  # Стрілка вправо
+            self.player_position[0] += 1
+
+        # Перемалювати сітку після зміни позиції
+        self.update()
