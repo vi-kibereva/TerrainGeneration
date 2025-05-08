@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.signal import convolve2d
 from .cells import CELL_LUT
-from numba import njit, prange
+from copy import copy
 
 
 NUMBER_OF_ITERATIONS = 10
@@ -42,7 +42,7 @@ def get_biome(terrain: int, value: np.ndarray) -> int:
     Generates biome for the cell
     """
     probs = value / value.sum()
-    biome = np.random.choice(4, p=probs)
+    biome = np.random.choice((0, 1, 2, 3), p=probs)
 
     return (biome << 2) | terrain
 
@@ -51,7 +51,7 @@ def biome_evolve(bigger_chunk: np.ndarray) -> None:
     """
     Convolution-like generation for biome
     """
-
+    bigger_chunk = copy(bigger_chunk)
     terrain: np.ndarray = bigger_chunk & 0b11
     biome = (bigger_chunk & 0b1100) >> 2
     size = CHUNK_SIZE
@@ -62,11 +62,11 @@ def biome_evolve(bigger_chunk: np.ndarray) -> None:
             for k in range(0, 5):
                 for m in range(0, 5):
                     if terrain[i, j] != terrain[i + k, j + m]:
-                        result[i, j] = biome[i, j]
+                        biome_idx: np.int8 = biome[i, j]
                     else:
                         biome_idx: np.int8 = biome[i + k, j + m]
-                        value[biome_idx] += 1 * BIOME_KERNEL[k, m]
-            bigger_chunk[i, j] = get_biome(bigger_chunk[i, j], value)
+                    value[biome_idx] += 1 * BIOME_KERNEL[k, m]
+            result = get_biome(bigger_chunk[i, j], value)
     bigger_chunk[2:-2, 2:-2] = result
 
 
@@ -75,7 +75,7 @@ def generate_chunk_biome(bigger_chunk: np.ndarray) -> np.ndarray:
     Generates chunk biome
     """
     noise = np.random.randint(0, 4, size=(CHUNK_SIZE+4, CHUNK_SIZE+4))
-    bigger_chunk = (noise << 2) | noise
+    bigger_chunk = (noise << 2) | bigger_chunk
     for _ in range(NUMBER_OF_ITERATIONS):
         biome_evolve(bigger_chunk)
     return bigger_chunk[2:-2, 2:-2]
