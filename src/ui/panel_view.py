@@ -1,8 +1,7 @@
 import random
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLineEdit, QLabel
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLineEdit, QLabel, QSlider
 from PySide6.QtCore import Qt
-
 class ControlPanel(QWidget):
     """Side panel with seed, density and action buttons"""
     def __init__(self, parent=None):
@@ -61,6 +60,20 @@ class ControlPanel(QWidget):
 
         layout.addStretch()
 
+        # Повзунок зуму
+        zoom_label = QLabel("Zoom:")
+        zoom_label.setStyleSheet("color: white; font-size: 16px; font-weight: bold;")
+        layout.addWidget(zoom_label)
+
+        self.zoom_slider = QSlider(Qt.Horizontal)
+        self.zoom_slider.setMinimum(5)      # 0.5x zoom
+        self.zoom_slider.setMaximum(20)     # 2.0x zoom
+        self.zoom_slider.setValue(10)       # 1.0x zoom
+        self.zoom_slider.setTickInterval(1)
+        self.zoom_slider.setTickPosition(QSlider.TicksBelow)
+        self.zoom_slider.valueChanged.connect(self.zoom_changed)
+        layout.addWidget(self.zoom_slider)
+
     def start_generation(self):
         try:
             seed = int(self.seed_input.text()) if self.seed_input.text() else random.randint(0, 100000)
@@ -81,3 +94,8 @@ class ControlPanel(QWidget):
     def random_seed(self):
         value = random.randint(0, 100000)
         self.seed_input.setText(str(value))
+
+    def zoom_changed(self, value):
+        zoom_level = value / 10.0  # перетворення значення повзунка на масштаб
+        if hasattr(self.parent_, 'grid_view'):
+            self.parent_.grid_view.set_zoom(zoom_level)
