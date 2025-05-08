@@ -1,101 +1,78 @@
-import random
-from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLineEdit, QLabel, QSlider
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLineEdit, QLabel, QHBoxLayout
 from PySide6.QtCore import Qt
+import random
+
 class ControlPanel(QWidget):
-    """Side panel with seed, density and action buttons"""
+    """Side panel with seed, density, radius and action buttons"""
     def __init__(self, parent=None):
         super().__init__(parent)
         self.parent_ = parent
-
-        # Основні стилі
-        self.setStyleSheet("""
-            QWidget#control_panel { background-color: #f5f5f5; }
-            QLabel { font-size: 14px; color: #333; }
-            QLineEdit { padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
-            QPushButton { padding: 10px; border: none; border-radius: 4px; background-color: #525252; color: white; font-size: 15px; }
-            QPushButton:hover { background-color: #45a049; }
-        """
-        )
         self.setObjectName("control_panel")
-        self.setFixedWidth(280)
+        self.setFixedWidth(300)
+        # Styles
+        self.setStyleSheet(
+            "#control_panel { background-color: #333; }"
+            " QLabel { color: #fff; font-size: 14px; }"
+            " QLineEdit { padding: 6px; border-radius: 4px; border: 1px solid #555; background: #555; color: #fff;}"
+            " QPushButton { padding: 8px; border-radius: 4px; background-color: #555; color: #fff; }"
+            " QPushButton:hover { background-color: #777; }"
+        )
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(16, 16, 16, 16)
         layout.setSpacing(12)
 
-        # Опис полів для вводу
-        description = QLabel("Settings")
-        description.setStyleSheet("color: white; font-weight: bold; font-size: 18px; margin-bottom: 8px;")
-        layout.addWidget(description)
+        header = QLabel("Settings")
+        header.setAlignment(Qt.AlignCenter)
+        header.setStyleSheet("font-weight: bold; font-size: 18px;")
+        layout.addWidget(header)
 
-        # Seed input
-        label_seed = QLabel("Seed:")
-        label_seed.setStyleSheet("color: white; font-size: 16px; font-weight: bold;")
-        layout.addWidget(label_seed)
+        # Seed
+        layout.addWidget(QLabel("Seed:"))
         self.seed_input = QLineEdit()
-        self.seed_input.setPlaceholderText("10101010")
+        self.seed_input.setPlaceholderText("Enter integer or leave blank")
         layout.addWidget(self.seed_input)
 
-        # Density input
-        label_density = QLabel("Density (0–1):")
-        label_density.setStyleSheet("color: white; font-size: 16px; font-weight: bold;")
-        layout.addWidget(label_density)
+        # Density
+        layout.addWidget(QLabel("Density (0–1):"))
         self.density_input = QLineEdit()
-        self.density_input.setPlaceholderText("0.3")
+        self.density_input.setPlaceholderText("0.5")
         layout.addWidget(self.density_input)
 
-        # Кнопки дій у стовпець
-        self.start_btn = QPushButton("Start")
-        self.start_btn.clicked.connect(self.start_generation)
-        layout.addWidget(self.start_btn)
+        # Radius
+        layout.addWidget(QLabel("Radius (>=2):"))
+        self.radius_input = QLineEdit()
+        self.radius_input.setPlaceholderText("2")
+        layout.addWidget(self.radius_input)
 
-        self.regen_btn = QPushButton("Regenerate")
-        self.regen_btn.clicked.connect(self.regenerate)
-        layout.addWidget(self.regen_btn)
+        # Buttons layout
+        btn_layout = QHBoxLayout()
+        self.generate_btn = QPushButton("Generate")
+        self.generate_btn.clicked.connect(self.start_generation)
+        btn_layout.addWidget(self.generate_btn)
 
-        self.random_btn = QPushButton("Random seed")
+        self.random_btn = QPushButton("Random Seed")
         self.random_btn.clicked.connect(self.random_seed)
-        layout.addWidget(self.random_btn)
+        btn_layout.addWidget(self.random_btn)
 
+        layout.addLayout(btn_layout)
         layout.addStretch()
-
-        # Повзунок зуму
-        zoom_label = QLabel("Zoom:")
-        zoom_label.setStyleSheet("color: white; font-size: 16px; font-weight: bold;")
-        layout.addWidget(zoom_label)
-
-        self.zoom_slider = QSlider(Qt.Horizontal)
-        self.zoom_slider.setMinimum(5)      # 0.5x zoom
-        self.zoom_slider.setMaximum(20)     # 2.0x zoom
-        self.zoom_slider.setValue(10)       # 1.0x zoom
-        self.zoom_slider.setTickInterval(1)
-        self.zoom_slider.setTickPosition(QSlider.TicksBelow)
-        self.zoom_slider.valueChanged.connect(self.zoom_changed)
-        layout.addWidget(self.zoom_slider)
 
     def start_generation(self):
         try:
             seed = int(self.seed_input.text()) if self.seed_input.text() else random.randint(0, 100000)
             density = float(self.density_input.text()) if self.density_input.text() else 0.5
+            radius = int(self.radius_input.text()) if self.radius_input.text() else 2
+            if radius < 2:
+                raise ValueError("Radius must be >= 2")
         except ValueError:
             from PySide6.QtWidgets import QMessageBox
-            QMessageBox.critical(self, "Error", "Please enter valid value.")
+            QMessageBox.critical(self, "Invalid Input", "Please enter valid numeric values.")
             return
-        if hasattr(self.parent_, 'generate_grid'):
-            self.parent_.generate_grid(seed=seed, density=density)
 
-    def regenerate(self):
-        self.seed_input.clear()
-        self.density_input.clear()
-        if hasattr(self.parent_, 'clear_grid'):
-            self.parent_.clear_grid()
+        if hasattr(self.parent_, 'generate'):
+            self.parent_.generate(seed, density, radius)
 
     def random_seed(self):
         value = random.randint(0, 100000)
         self.seed_input.setText(str(value))
-
-    def zoom_changed(self, value):
-        zoom_level = value / 10.0  # перетворення значення повзунка на масштаб
-        if hasattr(self.parent_, 'grid_view'):
-            self.parent_.grid_view.set_zoom(zoom_level)
