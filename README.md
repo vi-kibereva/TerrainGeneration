@@ -6,6 +6,7 @@ A customizable Minecraft-inspired application that simulates procedural terrain 
 
 * [Features](#features)
 * [Installation](#installation)
+* [Video example](#video-example)
 * [How It Works](#how-it-works)
 * [Developers and Responsibilities](#developers-and-responsibilities)
 
@@ -43,6 +44,10 @@ To install and run the application, follow these steps:
    ```bash
    python3 -m src.main
    ```
+
+## Video example
+![amogus](https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExODU1cjRrNjB4Z3JmY2lzMzQzOWN1ZTBhd2phcWZmd2JuZmNkbDNqaSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/sPVn4kmov6qquA2rlh/giphy.gif)
+
 
 ## How It Works
 
