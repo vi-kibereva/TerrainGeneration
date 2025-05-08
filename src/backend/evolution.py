@@ -19,6 +19,9 @@ DENSITY = 0.7
 
 
 def evolve(bigger_chunk: np.ndarray) -> None:
+    '''
+    Generates terrain
+    '''
     convolved = convolve2d(bigger_chunk, KERNEL, mode="valid")
     bigger_chunk[1:-1, 1:-1] = CELL_LUT[convolved]
 
@@ -30,6 +33,9 @@ def generate_chunk(bigger_chunk: np.ndarray) -> np.ndarray:
     return bigger_chunk[1:-1, 1:-1]
 
 def get_biome(terrain:int, value:np.ndarray) -> int:
+    '''
+    Generates biome for the cell
+    '''
     probs = value / value.sum()
     biome = np.random.choice(4, p=probs)
     return (biome << 2) | terrain
@@ -37,6 +43,9 @@ def get_biome(terrain:int, value:np.ndarray) -> int:
 
 @njit(parallel=True, fastmath=True)
 def biome_evolve(bigger_chunk:np.ndarray) -> np.ndarray:
+    '''
+    Convolution for biome generation
+    '''
     terrain: np.ndarray = bigger_chunk & 0b11
     biome = (bigger_chunk & 0b1100) >> 2
     size = CHUNK_SIZE
@@ -46,19 +55,26 @@ def biome_evolve(bigger_chunk:np.ndarray) -> np.ndarray:
             value = np.zeros(4, dtype=np.float32)
             for k in range(0, 5):
                 for m in range(0, 5):
-                    if terrain[i, j] != terrain[i+k, j+k]: result[i, j] = biome[i, j]
+                    if terrain[i, j] != terrain[i+k, j+k]: 
+                        result[i, j] = biome[i, j]
                     else:
                         biome_idx: np.int8 = biome[i + k, j + m]
                         value[biome_idx] += 1 * BIOME_KERNEL[k, m]
     bigger_chunk[1:-1, 1:-1] = result
 
 def generate_chunk_biome(bigger_chunk:np.ndarray) -> np.ndarray:
+    '''
+    Generates chunk biome
+    '''
     for _ in range(NUMBER_OF_ITERATIONS):
         biome_evolve(bigger_chunk)
     return bigger_chunk
 
 @njit(parallel=True, fastmath=True)
 def textures(bigger_chunk:np.ndarray, density: float) -> np.ndarray:
+    '''
+    Adds textures
+    '''
     mask = np.random.choice((0, 1), size=(CHUNK_SIZE, CHUNK_SIZE), p=[1-density, density])
     for i in prange(CHUNK_SIZE):
         for j in range(CHUNK_SIZE):
