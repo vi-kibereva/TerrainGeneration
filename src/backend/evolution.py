@@ -1,7 +1,8 @@
 import numpy as np
 from scipy.signal import convolve2d
-from .cells import CELL_LUT, CellTypes
+from .cells import CELL_LUT
 from numba import njit, prange
+import random
 
 NUMBER_OF_ITERATIONS = 10
 KERNEL = np.ones((3, 3), dtype=np.int8)
@@ -45,9 +46,7 @@ def biome_evolve(bigger_chunk:np.ndarray) -> np.ndarray:
             value = np.zeros(4, dtype=np.float32)
             for k in range(0, 5):
                 for m in range(0, 5):
-                    # acc += bigger_chunk[i + k, j + m] * BIOME_KERNEL[5 - 1 - k, 5 - 1 - m]
-                    if terrain[i, j] != terrain[i+k, j+k]:
-                        result[i, j] = biome[i, j]
+                    if terrain[i, j] != terrain[i+k, j+k]: result[i, j] = biome[i, j]
                     else:
                         biome_idx: np.int8 = biome[i + k, j + m]
                         value[biome_idx] += 1 * BIOME_KERNEL[k, m]
@@ -58,3 +57,11 @@ def generate_chunk_biome(bigger_chunk:np.ndarray) -> np.ndarray:
         biome_evolve(bigger_chunk)
     return bigger_chunk
 
+@njit(parallel=True, fastmath=True)
+def textures(bigger_chunk:np.ndarray, density: float) -> np.ndarray:
+    mask = np.random.choice((0, 1), size=(CHUNK_SIZE, CHUNK_SIZE), p=[1-density, density])
+    for i in prange(CHUNK_SIZE):
+        for j in range(CHUNK_SIZE):
+            if mask[i][j] == 1:
+                bigger_chunk[i][j] = bigger_chunk[i][j]|(random.choice([1, 3])<<4)
+    return bigger_chunk
