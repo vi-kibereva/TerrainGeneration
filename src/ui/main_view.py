@@ -12,17 +12,14 @@ class MainWindow(QtWidgets.QMainWindow):
         central = QtWidgets.QWidget()
         layout = QtWidgets.QHBoxLayout(central)
 
-        # Панель керування
         self.control_panel = ControlPanel(parent=self)
         layout.addWidget(self.control_panel)
 
-        # Візуалізація
         self.grid_view = GridView(grid, parent=self)
         layout.addWidget(self.grid_view, stretch=1)
 
         self.setCentralWidget(central)
 
-        # Ініціалізація генерації
         self.grid = grid
         self.radius = radius
         self.control_panel.start_generation()  # автоматичний старт
@@ -33,6 +30,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.grid_view.grid = self.grid
         self.grid_view.origin = (-(self.grid_view.cells_w // 2), -(self.grid_view.cells_h // 2))
         self.grid_view.update()
+
+    def set_zoom(self, value: int):
+        self.grid_view.set_zoom(value)
 
 
 def main():

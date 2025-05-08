@@ -22,9 +22,9 @@ MAX_RANGE = 36
 
 CELL_LUT = np.empty(MAX_RANGE + 1, dtype=np.int8)
 
-CELL_LUT[0 : 5] = CellTypes.WATER.value
-CELL_LUT[6 : 20 ] = CellTypes.LAND.value
-CELL_LUT[21 : 999] = CellTypes.MOUNTAIN.value
+CELL_LUT[0 : 10] = CellTypes.WATER.value
+CELL_LUT[10 : 20 ] = CellTypes.LAND.value
+CELL_LUT[20 : 999] = CellTypes.MOUNTAIN.value
 
 class WaterType(IntEnum):
     VERYDEEP = 0
