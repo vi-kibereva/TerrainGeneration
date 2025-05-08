@@ -43,39 +43,42 @@ def get_biome(terrain: int, value: np.ndarray) -> int:
     """
     probs = value / value.sum()
     biome = np.random.choice(4, p=probs)
+
     return (biome << 2) | terrain
 
 
-@njit(parallel=True, fastmath=True)
 def biome_evolve(bigger_chunk: np.ndarray) -> None:
     """
     Convolution-like generation for biome
     """
+
     terrain: np.ndarray = bigger_chunk & 0b11
     biome = (bigger_chunk & 0b1100) >> 2
     size = CHUNK_SIZE
     result = np.zeros((size, size), dtype=np.int8)
-    for i in prange(size):
+    for i in range(size):
         for j in range(size):
             value = np.zeros(4, dtype=np.float32)
             for k in range(0, 5):
                 for m in range(0, 5):
-                    if terrain[i, j] != terrain[i + k, j + k]:
+                    if terrain[i, j] != terrain[i + k, j + m]:
                         result[i, j] = biome[i, j]
                     else:
                         biome_idx: np.int8 = biome[i + k, j + m]
                         value[biome_idx] += 1 * BIOME_KERNEL[k, m]
             bigger_chunk[i, j] = get_biome(bigger_chunk[i, j], value)
-    bigger_chunk[1:-1, 1:-1] = result
+    bigger_chunk[2:-2, 2:-2] = result
 
 
 def generate_chunk_biome(bigger_chunk: np.ndarray) -> np.ndarray:
     """
     Generates chunk biome
     """
+    noise = np.random.randint(0, 4, size=(CHUNK_SIZE+4, CHUNK_SIZE+4))
+    bigger_chunk = (noise << 2) | noise
     for _ in range(NUMBER_OF_ITERATIONS):
         biome_evolve(bigger_chunk)
-    return bigger_chunk
+    return bigger_chunk[2:-2, 2:-2]
 
 def textures(chunk: np.ndarray, density: float) -> np.ndarray:
     """

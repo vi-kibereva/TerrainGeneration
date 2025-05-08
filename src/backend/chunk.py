@@ -46,20 +46,29 @@ class Chunk:
     ) -> None:
         x, y = pos
 
-        padded = np.zeros((CHUNK_SIZE + 2, CHUNK_SIZE + 2), dtype=np.int8)
-        padded[1:-1, 1:-1] = self.__cells
+        padded = np.zeros((CHUNK_SIZE + 4, CHUNK_SIZE + 4), dtype=np.int8)
+        padded[2:-2, 2:-2] = self.__cells
 
-        padded[0, 1:-1] = grid[x, y + 1].cells[-1, :]
-        padded[-1, 1:-1] = grid[x, y - 1].cells[0, :]
-        padded[1:-1, 0] = grid[x - 1, y].cells[:, -1]
-        padded[1:-1, -1] = grid[x + 1, y].cells[:, 0]
-        padded[0, 0] = grid[x - 1, y + 1].cells[-1, -1]
-        padded[0, -1] = grid[x + 1, y + 1].cells[-1, 0]
-        padded[-1, 0] = grid[x - 1, y - 1].cells[0, -1]
-        padded[-1, -1] = grid[x + 1, y - 1].cells[0, 0]
+        padded[0:2, 2:-2] = grid[x, y + 1].cells[-2:, :]
+        padded[-2:, 2:-2] = grid[x, y - 1].cells[:2, :]
+
+        padded[2:-2, 0:2] = grid[x - 1, y].cells[:, -2:]
+        padded[2:-2, -2:] = grid[x + 1, y].cells[:, :2]
+
+        padded[0:2, 0:2] = grid[x - 1, y + 1].cells[-2:, -2:]
+        padded[0:2, -2:] = grid[x + 1, y + 1].cells[-2:, :2]
+        padded[-2:, 0:2] = grid[x - 1, y - 1].cells[:2, -2:]
+        padded[-2:, -2:] = grid[x + 1, y - 1].cells[:2, :2]
+
+        print(f"pre_gen: {self.cells}")
 
         self.__cells = generate_chunk_biome(padded)
+        
+        # print(f"biome: {self.cells}")
+
         self.__cells = textures(self.__cells, density=texture_density)
+
+        # print(f"textures: {self.cells}")
 
         self.state = ChunkStates.GENERATED
 
@@ -78,8 +87,11 @@ class Chunk:
         padded[-1, 0] = grid[x - 1, y - 1].cells[0, -1]
         padded[-1, -1] = grid[x + 1, y - 1].cells[0, 0]
 
+
         self.__cells = pre_generate_chunk(padded)
         self.state = ChunkStates.PRE_GENERATED
+
+        print(f"pre: {self.cells}")
 
 
 class NoneChunk(Chunk, metaclass=Singleton):

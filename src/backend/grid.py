@@ -39,7 +39,7 @@ class Grid:
     def _generate_chunks(self, pos: tuple[int, int], radius: int):
         for chunk, pos in self._get_chunks_in_radius(pos, radius):
             if chunk.state.value == ChunkStates.PRE_GENERATED.value:
-                chunk.pre_generate_self(self, pos)
+                chunk.generate_self(self, pos)
 
     def _get_chunks_in_radius(
         self, pos: tuple[int, int], radius: int
