@@ -19,7 +19,7 @@ class Grid:
         if generated_radius <= 1:
             raise ValueError("generated_radius must be at least 2")
 
-        pre_generated_radius = generated_radius + 2
+        pre_generated_radius = generated_radius + 4
         noise_radius = pre_generated_radius + 2
 
         self._create_random_chunks(pos, noise_radius)

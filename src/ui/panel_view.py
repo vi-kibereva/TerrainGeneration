@@ -3,7 +3,7 @@ from PySide6.QtCore import Qt
 import random
 
 class ControlPanel(QWidget):
-    """Side panel with seed, density, radius and action buttons"""
+    """Side panel with seed, density, radius, and action buttons"""
     def __init__(self, parent=None):
         super().__init__(parent)
         self.parent_ = parent
@@ -33,16 +33,15 @@ class ControlPanel(QWidget):
         self.seed_input.setPlaceholderText("Enter integer or leave blank")
         layout.addWidget(self.seed_input)
 
-        # Density
-        layout.addWidget(QLabel("Density (0–1):"))
+        # Optional: Add input fields for density and radius if needed
         self.density_input = QLineEdit()
-        self.density_input.setPlaceholderText("0.5")
+        self.density_input.setPlaceholderText("Enter density (e.g. 0.5)")
+        layout.addWidget(QLabel("Density:"))
         layout.addWidget(self.density_input)
 
-        # Radius
-        layout.addWidget(QLabel("Radius (>=2):"))
         self.radius_input = QLineEdit()
-        self.radius_input.setPlaceholderText("2")
+        self.radius_input.setPlaceholderText("Enter radius (e.g. 2)")
+        layout.addWidget(QLabel("Radius:"))
         layout.addWidget(self.radius_input)
 
         # Buttons layout
@@ -70,7 +69,7 @@ class ControlPanel(QWidget):
             QMessageBox.critical(self, "Invalid Input", "Please enter valid numeric values.")
             return
 
-        if hasattr(self.parent_, 'generate'):
+        if self.parent_ and hasattr(self.parent_, 'generate'):
             self.parent_.generate(seed, density, radius)
 
     def random_seed(self):
