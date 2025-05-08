@@ -23,7 +23,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(central)
 
 
-
 def main():
     import sys
 
@@ -31,7 +30,7 @@ def main():
 
     # Ініціалізуємо модель і створюємо сітку початково
     grid = Grid(density=0.5)
-    grid.generate_around((0, 0), generated_radius=2, noise_radius=5)
+    grid.generate_around((0, 0), generated_radius=2)
 
     # Створюємо головне вікно
     window = MainWindow(grid)
