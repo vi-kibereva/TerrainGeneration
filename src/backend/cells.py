@@ -6,8 +6,9 @@ import numpy as np
 
 class CellTypes(IntEnum):
     WATER = 0
-    LAND = 3
-    MOUNTAIN = 4
+    LAND = 2
+    MOUNTAIN = 3
+
 
 
 CELL_RANGES: dict[Any, tuple[int, int]] = {
@@ -24,3 +25,21 @@ CELL_LUT = np.empty(MAX_RANGE + 1, dtype=np.int8)
 CELL_LUT[0 : 11 + 1] = CellTypes.WATER.value
 CELL_LUT[12 : 26 + 1] = CellTypes.LAND.value
 CELL_LUT[27 : 63 + 1] = CellTypes.MOUNTAIN.value
+
+class WaterType(IntEnum):
+    VERYDEEP = 0
+    DEEP = 1
+    MODERATE = 2
+    SHALLOW = 3
+
+class LandType(IntEnum):
+    SAND = 0
+    GRASS = 1
+    FOREST = 2
+    HILL = 3
+
+class MountainType(IntEnum):
+    LOW = 0
+    MODERATE = 1
+    HIGH = 2
+    SNOWY = 3
