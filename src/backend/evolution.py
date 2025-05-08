@@ -76,7 +76,7 @@ def generate_chunk_biome(bigger_chunk: np.ndarray) -> np.ndarray:
     """
     noise = np.random.randint(0, 4, size=(CHUNK_SIZE+4, CHUNK_SIZE+4))
     bigger_chunk = (noise << 2) | bigger_chunk
-    for _ in range(NUMBER_OF_ITERATIONS):
+    for _ in range(100):
         biome_evolve(bigger_chunk)
     return bigger_chunk[2:-2, 2:-2]
 
