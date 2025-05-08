@@ -66,7 +66,7 @@ def biome_evolve(bigger_chunk: np.ndarray) -> None:
                     else:
                         biome_idx: np.int8 = biome[i + k, j + m]
                     value[biome_idx] += 1 * BIOME_KERNEL[k, m]
-            result = get_biome(bigger_chunk[i, j], value)
+            result[i, j] = get_biome(bigger_chunk[i, j], value)
     bigger_chunk[2:-2, 2:-2] = result
 
 
