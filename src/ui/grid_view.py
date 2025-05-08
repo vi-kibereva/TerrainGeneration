@@ -29,6 +29,7 @@ class GridView(QtWidgets.QWidget):
         self.current_chunk = (0, 0)
         self.pressed_keys = set()
 
+        # Початкова генерація навколо в main перед створенням GridView
         self._ensure_chunks()
         self.setMinimumSize(800, 600)
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
@@ -50,7 +51,9 @@ class GridView(QtWidgets.QWidget):
             floor(self.player_position[0] / CHUNK_SIZE),
             floor(self.player_position[1] / CHUNK_SIZE)
         )
+
         self._ensure_chunks()
+
         self.update()
 
     def clear_grid(self):
@@ -59,10 +62,12 @@ class GridView(QtWidgets.QWidget):
         self.current_chunk = (0, 0)
         self._ensure_chunks()
         self.player_position = self.find_land_position()
+
         self.current_chunk = (
             floor(self.player_position[0] / CHUNK_SIZE),
             floor(self.player_position[1] / CHUNK_SIZE)
         )
+
         self._ensure_chunks()
         self.update()
 
@@ -87,6 +92,7 @@ class GridView(QtWidgets.QWidget):
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
         painter.setPen(QtCore.Qt.NoPen)
+
         w, h = self.width(), self.height()
         base_w, base_h = w / self.cells_w, h / self.cells_h
         cw, ch = base_w * self.zoom, base_h * self.zoom
@@ -124,7 +130,9 @@ class GridView(QtWidgets.QWidget):
 
                 px = (col * cw) - ((ox - start_col) * cw)
                 py = (row * ch) - ((oy - start_row) * ch)
+
                 painter.fillRect(QtCore.QRectF(px, py, cw + 1, ch + 1), color)
+
         size = int(min(cw, ch) * self.PLAYER_SCALE)
         scaled = self.player_pixmap.scaled(
             size, size,
@@ -191,4 +199,5 @@ class GridView(QtWidgets.QWidget):
                         val = int(chunk.cells[ix, iy])
                         if val >= self.WATER_THRESHOLD:
                             return [gx, gy]
+
         return [float(gx), float(gy)]
