@@ -39,7 +39,7 @@ To install and run the application, follow these steps:
 
 ## Developers and Responsibilities
 
-* **Viktoria Kebereva** ([@vi-kibereva](https://github.com/vi-kibereva)) - Backend
+* **Viktoria Kibyeryeva** ([@vi-kibereva](https://github.com/vi-kibereva)) - Backend
 * **Stanislav Konovalenko** ([@weqpro](https://github.com/weqpro)) - Backend
 * **Daryna Nychyporuk** ([@dd8ria](https://github.com/dd8ria)) - UI
 * **Anastasia Liubenchuk** ([@saudeawd](https://github.com/saudeawd)) - UI
