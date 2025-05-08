@@ -3,6 +3,7 @@ from scipy.signal import convolve2d
 from .cells import CELL_LUT
 from numba import njit, prange
 
+
 NUMBER_OF_ITERATIONS = 10
 KERNEL = np.ones((3, 3), dtype=np.int8)
 BIOME_KERNEL = np.full((5, 5), 1 / 25, dtype=np.float32)
@@ -64,6 +65,7 @@ def biome_evolve(bigger_chunk: np.ndarray) -> None:
                     else:
                         biome_idx: np.int8 = biome[i + k, j + m]
                         value[biome_idx] += 1 * BIOME_KERNEL[k, m]
+            bigger_chunk[i, j] = get_biome(bigger_chunk[i, j], value)
     bigger_chunk[1:-1, 1:-1] = result
 
 
@@ -75,8 +77,6 @@ def generate_chunk_biome(bigger_chunk: np.ndarray) -> np.ndarray:
         biome_evolve(bigger_chunk)
     return bigger_chunk
 
-
-@njit(parallel=True, fastmath=True)
 def textures(chunk: np.ndarray, density: float) -> np.ndarray:
     """
     Adds textures
