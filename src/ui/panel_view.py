@@ -1,9 +1,9 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLineEdit, QLabel, QHBoxLayout, QSlider
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLineEdit, QLabel, QHBoxLayout
 from PySide6.QtCore import Qt
 import random
 
 class ControlPanel(QWidget):
-    """Side panel with seed, zoom, and action buttons"""
+    """Side panel with seed, density, radius, and action buttons"""
     def __init__(self, parent=None):
         super().__init__(parent)
         self.parent_ = parent
@@ -16,8 +16,6 @@ class ControlPanel(QWidget):
             " QLineEdit { padding: 6px; border-radius: 4px; border: 1px solid #555; background: #555; color: #fff;}"
             " QPushButton { padding: 8px; border-radius: 4px; background-color: #555; color: #fff; }"
             " QPushButton:hover { background-color: #777; }"
-            " QSlider::groove:horizontal { height: 6px; background: #444; }"
-            " QSlider::handle:horizontal { width: 14px; background: #888; margin: -4px 0; border-radius: 7px; }"
         )
 
         layout = QVBoxLayout(self)
@@ -35,13 +33,16 @@ class ControlPanel(QWidget):
         self.seed_input.setPlaceholderText("Enter integer or leave blank")
         layout.addWidget(self.seed_input)
 
-        # Zoom slider
-        layout.addWidget(QLabel("Zoom:"))
-        self.zoom_slider = QSlider(Qt.Horizontal)
-        self.zoom_slider.setRange(1, 5)  # 1x to 5x zoom
-        self.zoom_slider.setValue(1)
-        self.zoom_slider.valueChanged.connect(self.zoom_changed)
-        layout.addWidget(self.zoom_slider)
+        # Optional: Add input fields for density and radius if needed
+        self.density_input = QLineEdit()
+        self.density_input.setPlaceholderText("Enter density (e.g. 0.5)")
+        layout.addWidget(QLabel("Density:"))
+        layout.addWidget(self.density_input)
+
+        self.radius_input = QLineEdit()
+        self.radius_input.setPlaceholderText("Enter radius (e.g. 2)")
+        layout.addWidget(QLabel("Radius:"))
+        layout.addWidget(self.radius_input)
 
         # Buttons layout
         btn_layout = QHBoxLayout()
@@ -59,21 +60,18 @@ class ControlPanel(QWidget):
     def start_generation(self):
         try:
             seed = int(self.seed_input.text()) if self.seed_input.text() else random.randint(0, 100000)
+            density = float(self.density_input.text()) if self.density_input.text() else 0.5
+            radius = int(self.radius_input.text()) if self.radius_input.text() else 2
+            if radius < 2:
+                raise ValueError("Radius must be >= 2")
         except ValueError:
             from PySide6.QtWidgets import QMessageBox
-            QMessageBox.critical(self, "Invalid Input", "Please enter a valid integer for the seed.")
+            QMessageBox.critical(self, "Invalid Input", "Please enter valid numeric values.")
             return
 
-        default_density = 0.5
-        default_radius = 2
-
-        if hasattr(self.parent_, 'generate'):
-            self.parent_.generate(seed, default_density, default_radius)
+        if self.parent_ and hasattr(self.parent_, 'generate'):
+            self.parent_.generate(seed, density, radius)
 
     def random_seed(self):
         value = random.randint(0, 100000)
         self.seed_input.setText(str(value))
-
-    def zoom_changed(self, value):
-        if hasattr(self.parent_, 'set_zoom'):
-            self.parent_.set_zoom(value)
