@@ -3,7 +3,6 @@ from src.backend.grid import Grid
 from src.ui.grid_view import GridView
 from src.ui.panel_view import ControlPanel
 
-
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, grid, radius: int):
         super().__init__()
