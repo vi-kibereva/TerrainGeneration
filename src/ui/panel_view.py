@@ -12,6 +12,7 @@ class ControlPanel(QWidget):
         self.parent_ = parent
         self.setObjectName("control_panel")
         self.setFixedWidth(300)
+        self.last_used_seed = None
 
         self.setStyleSheet(
             "#control_panel { background-color: #333; }"
@@ -25,19 +26,16 @@ class ControlPanel(QWidget):
         layout.setContentsMargins(16, 16, 16, 16)
         layout.setSpacing(12)
 
-        # Header
         header = QLabel("Settings")
         header.setAlignment(Qt.AlignCenter)
         header.setStyleSheet("font-weight: bold; font-size: 18px;")
         layout.addWidget(header)
 
-        # Seed input
         layout.addWidget(QLabel("Seed:"))
         self.seed_input = QLineEdit()
         self.seed_input.setPlaceholderText("Enter integer or leave blank")
         layout.addWidget(self.seed_input)
 
-        # Zoom slider
         layout.addWidget(QLabel("Zoom:"))
         self.zoom_slider = QSlider(Qt.Horizontal)
         self.zoom_slider.setMinimum(10)
@@ -48,7 +46,6 @@ class ControlPanel(QWidget):
         self.zoom_slider.valueChanged.connect(self.on_zoom_change)
         layout.addWidget(self.zoom_slider)
 
-        # Generate button
         self.generate_btn = QPushButton("Generate")
         self.generate_btn.clicked.connect(self.start_generation)
         layout.addWidget(self.generate_btn)
@@ -58,12 +55,20 @@ class ControlPanel(QWidget):
     def start_generation(self):
         seed_text = self.seed_input.text()
         try:
-            seed = int(seed_text) if seed_text else random.randint(0, 999999)
+            if seed_text:
+                seed = int(seed_text)
+            else:
+                seed = random.randint(0, 999999)
+                self.seed_input.setText(str(seed))
         except ValueError:
             QMessageBox.warning(self, "Invalid Seed", "Seed must be an integer.")
             return
-
-        self.parent_.grid_view.generate_grid(seed=seed, density=0.5)  # фіксована густина
+        
+        if seed == self.last_used_seed:
+            return
+        
+        self.last_used_seed = seed
+        self.parent_.grid_view.generate_grid(seed=seed, density=0.5)
 
     def on_zoom_change(self, value):
         self.parent_.grid_view.set_zoom(value / 100.0)

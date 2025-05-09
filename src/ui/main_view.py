@@ -11,20 +11,17 @@ class MainWindow(QtWidgets.QMainWindow):
         central = QtWidgets.QWidget()
         layout = QtWidgets.QHBoxLayout(central)
 
-        # Панель керування
         self.control_panel = ControlPanel(parent=self)
         layout.addWidget(self.control_panel)
 
-        # Візуалізація
         self.grid_view = GridView(grid, parent=self)
         layout.addWidget(self.grid_view, stretch=1)
 
         self.setCentralWidget(central)
 
-        # Ініціалізація генерації
         self.grid = grid
         self.radius = radius
-        self.control_panel.start_generation()  # автоматичний старт
+        self.control_panel.start_generation()
 
     def generate(self, seed: int, density: float, radius: int):
         self.grid = Grid(density=density)
