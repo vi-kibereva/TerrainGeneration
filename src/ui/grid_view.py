@@ -6,7 +6,6 @@ from PySide6.QtGui import QColor
 
 from src.backend.chunk import CHUNK_SIZE, ChunkStates, MAX_RANGE
 
-# --- Base and subtype colors definitions ---
 TERRAIN_BASE = {
     0b00: QColor(0,   0,   128),  # WATER
     0b10: QColor(34,  139, 34),   # LAND
@@ -59,13 +58,11 @@ class GridView(QtWidgets.QWidget):
         self.player_pixmap = QtGui.QPixmap("src/ui/chelik.png")
         self.zoom = 1.0
 
-        # знайти стартову позицію на суші
         self.player_position = self.find_land_position()
         self.current_chunk = (
             floor(self.player_position[0] / CHUNK_SIZE),
             floor(self.player_position[1] / CHUNK_SIZE)
         )
-        # початкова генерація чанків
         self._ensure_chunks()
 
         self.pressed_keys = set()
@@ -122,7 +119,6 @@ class GridView(QtWidgets.QWidget):
 
     def _ensure_chunks(self):
         """Генерує чанки навколо current_chunk"""
-        # Видаляємо noise_radius, що не підтримується
         self.grid.generate_around(
             self.current_chunk,
             generated_radius=self.GENERATE_RADIUS
